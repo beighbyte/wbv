@@ -5,6 +5,7 @@ import { isWhatsAppChatText } from "../parser/detect";
 import { parseChatTranscript } from "../parser/parse-chat";
 import { mediaRegistry } from "../storage/media-registry";
 import { chatCache } from "../storage/chat-cache";
+import { inspectFile, isZipHeader, isTextBuffer } from "../utils/file-signatures";
 
 export async function extractAndProcessFiles(
   fileList: File[] | FileList,
@@ -32,7 +33,16 @@ export async function extractAndProcessFiles(
   // Pass 1: Identify loose files and primary zips
   for (let i = 0; i < files.length; i++) {
     const f = files[i];
-    const name = f.name;
+    let name = f.name;
+
+    // If the file is named "_chat.txt" or "_chat" from a folder upload, use enclosing folder name
+    if ((name === "_chat.txt" || name === "_chat") && f.webkitRelativePath) {
+      const parts = f.webkitRelativePath.split("/");
+      if (parts.length > 1) {
+        name = parts[parts.length - 2];
+      }
+    }
+
     const ext = getExtension(name);
 
     if (ext === "zip") {
@@ -54,6 +64,16 @@ export async function extractAndProcessFiles(
     ) {
       // Register loose media without loading it into RAM!
       mediaRegistry.registerFile(name, f);
+    } else {
+      // Extensionless or unrecognized extension file: sniff magic bytes
+      const inspection = await inspectFile(f);
+      if (inspection.kind === "zip") {
+        zipFiles.push(f);
+      } else if (inspection.kind === "chat-text") {
+        txtEntries.push({ name, text: inspection.text });
+      } else if (inspection.kind === "media" || inspection.kind === "text") {
+        mediaRegistry.registerFile(name, f);
+      }
     }
 
     onProgress?.({
@@ -86,21 +106,50 @@ export async function extractAndProcessFiles(
         for (const [path, entry] of entries) {
           if (entry.dir) continue;
           const baseName = path.split("/").pop() || "";
-          const ext = getExtension(baseName);
+          let ext = getExtension(baseName);
+          let isNestedZip = ext === "zip";
+          let isTxt = ext === "txt";
+
+          // If entry inside zip has no extension, sniff header bytes
+          if (!ext) {
+            try {
+              const sample = await entry.async("uint8array");
+              if (isZipHeader(sample)) {
+                isNestedZip = true;
+              } else if (isTextBuffer(sample.subarray(0, Math.min(sample.length, 512)))) {
+                isTxt = true;
+              }
+            } catch {}
+          }
 
           // Check for nested ZIP
-          if (ext === "zip") {
+          if (isNestedZip) {
             try {
               const nestedBlob = await entry.async("blob");
               const nestedZip = await JSZip.loadAsync(nestedBlob);
               for (const [nestedPath, nestedEntry] of Object.entries(nestedZip.files)) {
                 if (nestedEntry.dir) continue;
                 const nestedBaseName = nestedPath.split("/").pop() || "";
-                const nestedExt = getExtension(nestedBaseName);
-                if (nestedExt === "txt") {
+                let nestedExt = getExtension(nestedBaseName);
+                let nestedIsTxt = nestedExt === "txt";
+
+                if (!nestedExt) {
+                  try {
+                    const nestedSample = await nestedEntry.async("uint8array");
+                    if (isTextBuffer(nestedSample.subarray(0, Math.min(nestedSample.length, 512)))) {
+                      nestedIsTxt = true;
+                    }
+                  } catch {}
+                }
+
+                if (nestedIsTxt) {
                   const text = await nestedEntry.async("string");
-                  if (isWhatsAppChatText(text, nestedBaseName)) {
-                    txtEntries.push({ name: nestedBaseName, text });
+                  let effectiveNestedName = nestedBaseName;
+                  if ((nestedBaseName === "_chat.txt" || nestedBaseName === "_chat") && baseName) {
+                    effectiveNestedName = baseName;
+                  }
+                  if (isWhatsAppChatText(text, effectiveNestedName)) {
+                    txtEntries.push({ name: effectiveNestedName, text });
                   } else {
                     const blob = await nestedEntry.async("blob");
                     mediaRegistry.registerBlob(nestedBaseName, blob);
@@ -116,10 +165,14 @@ export async function extractAndProcessFiles(
             continue;
           }
 
-          if (ext === "txt") {
+          if (isTxt) {
             const text = await entry.async("string");
-            if (isWhatsAppChatText(text, baseName)) {
-              txtEntries.push({ name: baseName, text });
+            let effectiveName = baseName;
+            if ((baseName === "_chat.txt" || baseName === "_chat") && zf.name) {
+              effectiveName = zf.name;
+            }
+            if (isWhatsAppChatText(text, effectiveName)) {
+              txtEntries.push({ name: effectiveName, text });
             } else {
               // Attachment text file registered lazily
               mediaRegistry.registerZipEntry(baseName, entry);
@@ -162,6 +215,20 @@ export async function extractAndProcessFiles(
     if (seenChats.has(dedupeKey)) continue;
     seenChats.add(dedupeKey);
     parsedRaw.push(item);
+  }
+
+  // Guard: if no valid WhatsApp transcripts were identified
+  if (parsedRaw.length === 0) {
+    onProgress?.({
+      stage: "error",
+      progress: 0,
+      message: "No valid WhatsApp chat transcripts found.",
+      totalFiles: files.length,
+      processedFiles: files.length,
+      chatCount: 0,
+      error: "No WhatsApp chats found. Please select a valid WhatsApp exported .zip archive or backup folder.",
+    });
+    return [];
   }
 
   // First pass: discover user's identity from 1-on-1 chats

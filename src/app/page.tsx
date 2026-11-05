@@ -47,6 +47,14 @@ export default function Home() {
         // On desktop, auto-open the first chat in the dual pane. On mobile, stay on chat list so user chooses.
         const isDesktop = typeof window !== "undefined" && window.innerWidth >= 768;
         setActiveChatId(isDesktop ? chats[0].id : null);
+      } else {
+        setProcessingState((prev) => ({
+          ...prev,
+          stage: "error",
+          error:
+            prev.error ||
+            "No WhatsApp chats found. Please select a valid WhatsApp exported .zip archive or backup folder.",
+        }));
       }
     } catch (err) {
       console.error("Error processing backup files:", err);

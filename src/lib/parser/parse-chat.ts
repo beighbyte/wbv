@@ -117,9 +117,9 @@ export function parseChatTranscript(
 
   if (messages.length === 0) return null;
 
-  // Contact name from file name
+  // Contact or group name from file name (supports Android 'with', iOS '-', or extensionless)
   let targetName = "";
-  const nameFromFilename = /WhatsApp\s+Chat\s+with\s+(.+?)(?:\.txt)?$/i.exec(fileName);
+  const nameFromFilename = /WhatsApp\s+Chat\s+(?:with|-|–|—)\s+(.+?)(?:\.[^/.]+)?$/i.exec(fileName);
   if (nameFromFilename) {
     targetName = cleanSenderName(nameFromFilename[1]) || nameFromFilename[1].trim();
   }
@@ -127,13 +127,35 @@ export function parseChatTranscript(
   const distinctSenders = Object.keys(senderCounts);
   const isGroup = hasGroupSystemEvent || distinctSenders.length > 2;
 
+  // If group name is still not known from filename, check system messages for group creation/subject change
+  if (isGroup && !targetName) {
+    for (const m of messages) {
+      if (m.system) {
+        const subjectMatch = /(?:created group|changed the subject to|changed the subject from .* to)\s+["“]([^"”]+)["”]/i.exec(m.body);
+        if (subjectMatch) {
+          targetName = subjectMatch[1].trim();
+          break;
+        }
+      }
+    }
+  }
+
   let resolvedMyName = knownMyName;
   let contactName = targetName;
 
   if (!isGroup) {
     // 1-ON-1 CHAT:
     // Exactly two participants: the Contact (targetName) and Me
-    contactName = targetName || (distinctSenders.length > 0 ? distinctSenders[0] : "Chat");
+    if (!targetName && distinctSenders.length > 0) {
+      if (resolvedMyName) {
+        const contact = distinctSenders.find((s) => s.toLowerCase() !== resolvedMyName!.toLowerCase());
+        contactName = contact || distinctSenders[0];
+      } else {
+        contactName = distinctSenders[0];
+      }
+    } else {
+      contactName = targetName || (distinctSenders.length > 0 ? distinctSenders[0] : "Chat");
+    }
 
     // The other sender must be "Me"
     if (!resolvedMyName) {

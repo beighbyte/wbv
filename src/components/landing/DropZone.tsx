@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { FolderUp, FileArchive, UploadCloud, HelpCircle, Sparkles, Loader2, ShieldCheck } from "lucide-react";
+import { FolderUp, FileArchive, UploadCloud, HelpCircle, Sparkles, Loader2, ShieldCheck, AlertCircle } from "lucide-react";
 import { ExportGuideModal } from "./ExportGuideModal";
 import { RazorpayButton } from "../common/RazorpayButton";
 import { ProcessingState } from "@/types/chat";
@@ -52,7 +52,6 @@ export const DropZone: React.FC<DropZoneProps> = ({
         ref={fileInputRef}
         type="file"
         multiple
-        accept=".zip,.txt,image/*,video/*,audio/*,application/pdf"
         className="hidden"
         onChange={(e) => {
           if (e.target.files && e.target.files.length > 0) {
@@ -94,6 +93,14 @@ export const DropZone: React.FC<DropZoneProps> = ({
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
           <span>All backups are decoded directly in your browser</span>
         </div>
+
+        {/* Validation / Error Notice */}
+        {processingState.stage === "error" && processingState.error && (
+          <div className="mt-3 p-3 text-left rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-xs flex items-start gap-2 animate-in fade-in duration-200">
+            <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+            <span>{processingState.error}</span>
+          </div>
+        )}
       </div>
 
       {/* Main Upload / Drop Card */}
