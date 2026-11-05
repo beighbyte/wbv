@@ -182,6 +182,7 @@ export const MessageVirtualList: React.FC<MessageVirtualListProps> = ({
                   <MessageBubble
                     message={item.message}
                     isGroup={conversation.isGroup}
+                    searchQuery={searchFilter}
                     onPreviewImage={onPreviewImage}
                   />
                 )}

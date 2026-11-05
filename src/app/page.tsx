@@ -241,6 +241,7 @@ export default function Home() {
                   key={chat.id}
                   conversation={chat}
                   isSelected={chat.id === activeChatId}
+                  searchQuery={chatListSearch}
                   onClick={() => {
                     setActiveChatId(chat.id);
                     setInChatSearch("");

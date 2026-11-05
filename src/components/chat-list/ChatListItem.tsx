@@ -1,18 +1,21 @@
 import React from "react";
 import { Conversation } from "@/types/chat";
 import { Avatar } from "../common/Avatar";
+import { HighlightText } from "../common/HighlightText";
 import { formatChatListDate } from "@/lib/utils/date";
 import { Users } from "lucide-react";
 
 interface ChatListItemProps {
   conversation: Conversation;
   isSelected?: boolean;
+  searchQuery?: string;
   onClick: () => void;
 }
 
 export const ChatListItem: React.FC<ChatListItemProps> = ({
   conversation,
   isSelected,
+  searchQuery = "",
   onClick,
 }) => {
   const timeFormatted = formatChatListDate(conversation.lastTimestamp);
@@ -44,18 +47,22 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-1">
-          <span className="font-medium text-gray-900 dark:text-gray-100 text-[15px] truncate">
-            {conversation.contactName}
-          </span>
+          <HighlightText
+            text={conversation.contactName}
+            query={searchQuery}
+            className="font-medium text-gray-900 dark:text-gray-100 text-[15px] truncate"
+          />
           <span className="text-[11px] text-gray-400 dark:text-gray-500 shrink-0 font-normal">
             {timeFormatted}
           </span>
         </div>
 
         <div className="flex items-center justify-between gap-2 mt-0.5">
-          <p className="text-[13px] text-gray-500 dark:text-gray-400 truncate leading-snug">
-            {conversation.lastMessage || "No messages"}
-          </p>
+          <HighlightText
+            text={conversation.lastMessage || "No messages"}
+            query={searchQuery}
+            className="text-[13px] text-gray-500 dark:text-gray-400 truncate leading-snug"
+          />
           <span className="text-[11px] text-gray-400 shrink-0">
             {(conversation.messageCount ?? conversation.messages.length).toLocaleString()} msgs
           </span>

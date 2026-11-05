@@ -3,6 +3,7 @@ import { ChatMessage } from "@/types/chat";
 import { VoiceNotePlayer } from "../media/VoiceNotePlayer";
 import { VideoPlayer } from "../media/VideoPlayer";
 import { DocumentCard } from "../media/DocumentCard";
+import { HighlightText } from "../common/HighlightText";
 import { getParticipantColor } from "@/lib/utils/colors";
 import { useMediaUrl } from "@/lib/storage/use-media-url";
 import { CheckCheck, Paperclip, AlertCircle, Loader2 } from "lucide-react";
@@ -10,15 +11,17 @@ import { CheckCheck, Paperclip, AlertCircle, Loader2 } from "lucide-react";
 interface MessageBubbleProps {
   message: ChatMessage;
   isGroup: boolean;
+  searchQuery?: string;
   onPreviewImage: (url: string, filename: string) => void;
 }
 
 const CHAR_LIMIT = 420;
 const LINE_LIMIT = 8;
 
-const ExpandableMessageText: React.FC<{ text: string; className?: string }> = ({
+const ExpandableMessageText: React.FC<{ text: string; className?: string; searchQuery?: string }> = ({
   text,
   className = "",
+  searchQuery = "",
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -28,7 +31,7 @@ const ExpandableMessageText: React.FC<{ text: string; className?: string }> = ({
   if (!isTooLong || isExpanded) {
     return (
       <div className={className}>
-        <span>{text}</span>
+        <HighlightText text={text} query={searchQuery} />
         {isTooLong && isExpanded && (
           <button
             onClick={() => setIsExpanded(false)}
@@ -49,7 +52,7 @@ const ExpandableMessageText: React.FC<{ text: string; className?: string }> = ({
 
   return (
     <div className={className}>
-      <span>{truncated.trimEnd()}... </span>
+      <HighlightText text={truncated.trimEnd() + "..."} query={searchQuery} />{" "}
       <button
         onClick={() => setIsExpanded(true)}
         className="text-[#027eb5] dark:text-emerald-400 hover:underline font-medium text-[13px] inline-block select-none"
@@ -63,6 +66,7 @@ const ExpandableMessageText: React.FC<{ text: string; className?: string }> = ({
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
   isGroup,
+  searchQuery = "",
   onPreviewImage,
 }) => {
   const isMine = message.direction === "out";
@@ -97,7 +101,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             className="text-[12px] font-semibold mb-1 px-0.5 select-none"
             style={{ color: getParticipantColor(message.sender) }}
           >
-            {message.sender}
+            <HighlightText text={message.sender} query={searchQuery} />
           </div>
         )}
 
@@ -152,6 +156,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
               <ExpandableMessageText
                 text={message.body}
                 className="text-[14px] leading-relaxed whitespace-pre-wrap break-words px-0.5 pt-1"
+                searchQuery={searchQuery}
               />
             )}
           </div>
@@ -159,6 +164,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           <ExpandableMessageText
             text={message.body}
             className="text-[14px] leading-relaxed whitespace-pre-wrap break-words px-0.5 select-text"
+            searchQuery={searchQuery}
           />
         )}
 
