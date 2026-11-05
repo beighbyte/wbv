@@ -1,21 +1,28 @@
 <div align="center">
+  <h1>
+    <img src="screenshots/logo.png" alt="wbv Logo" width="36" height="36" align="center" />
+    wbv
+  </h1>
+  <h3>Offline Chat Backup Viewer (for WhatsApp exports)</h3>
 
-# wbv
-### Offline Chat Backup Viewer (for WhatsApp exports)
+  <p><strong>The private, high-performance chat archive reader for your browser.</strong><br />
+  Open, search, and view exported WhatsApp chats (<code>.zip</code>, folders, <code>.txt</code>) with photos, audio notes, and videos.</p>
 
-**The private, high-performance chat archive reader for your browser.**  
-Open, search, and view exported WhatsApp chats (`.zip`, folders, `.txt`) with photos, audio notes, and videos.
+  <p>Zero server uploads • Multi-chat folder support • Hardware-accelerated 120Hz+ • 100% Client-side</p>
 
-Zero server uploads • Multi-chat folder support • Hardware-accelerated 120Hz+ • 100% Client-side
+  <p>
+    <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js" alt="Next.js 15" /></a>
+    <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19-blue?style=flat-square&logo=react" alt="React 19" /></a>
+    <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript" alt="TypeScript 5" /></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="License: MIT" /></a>
+    <a href="https://github.com/beighbyte/wbv"><img src="https://img.shields.io/badge/Privacy-100%25%20Offline-25D366?style=flat-square&logo=whatsapp" alt="Zero Server Uploads" /></a>
+    <a href="https://razorpay.me/@beighbyte"><img src="https://img.shields.io/badge/Sponsor-Razorpay-02042B?style=flat-square&logo=razorpay" alt="Sponsor" /></a>
+  </p>
+</div>
 
-[![Next.js 15](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)](https://nextjs.org/)
-[![React 19](https://img.shields.io/badge/React-19-blue?style=flat-square&logo=react)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
-[![Zero Server Uploads](https://img.shields.io/badge/Privacy-100%25%20Offline-25D366?style=flat-square&logo=whatsapp)](https://github.com/beighbyte/wbv)
-[![Sponsor](https://img.shields.io/badge/Sponsor-Razorpay-02042B?style=flat-square&logo=razorpay)](https://razorpay.me/@beighbyte)
+---
 
-<br /><br />
+<div align="center">
 
 | 1. Landing & Drag-and-Drop | 2. Multi-Chat Inbox | 3. Authentic Chat View |
 | :---: | :---: | :---: |

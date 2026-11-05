@@ -11,6 +11,11 @@ export const metadata: Metadata = {
     "WhatsApp Chat Viewer",
     "Local WhatsApp Reader",
   ],
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
