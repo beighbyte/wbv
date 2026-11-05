@@ -37,12 +37,17 @@ Most existing WhatsApp backup viewers either upload your sensitive personal chat
 
 **wbv is engineered differently:**
 
-- **Multi-Chat Batch Ingestion** — Drop an entire folder containing dozens of chat exports or multiple `.zip` archives at once. `wbv` automatically detects, parses, and arranges every individual and group conversation into a searchable sidebar inbox with instant switching.
-- **100% Offline & Private** — Zero server uploads. Runs entirely in your browser as a static web app. No backend, no API, no analytics. Your messages, photos, and voice notes never leave your computer or phone.
-- **Engineered for Huge Archives (5GB+)** — Media is indexed lazily and decoded only when scrolled into view. An automatic LRU cache revokes older media from memory, keeping RAM usage ultra-lean (~60MB) even with thousands of photos.
-- **Hardware-Accelerated Refresh Rate (120Hz+)** — Adapts directly to your display's refresh rate (90Hz, 120Hz, 144Hz+) using `@tanstack/react-virtual` with butter-smooth scrolling across 100,000+ messages (rendering only ~20 DOM nodes at a time).
-- **Authentic WhatsApp Interface** — Speech bubble tails, sticky date chips, audio waveforms with 1.5x/2x speed, full-screen image lightbox, and dark mode.
-- **Universal Android & iOS Parsing** — Automatically parses both Android (`\u202f` narrow spaces) and iOS bracketed exports, with one-click side swapping and perspective switching.
+- **Multi-Chat Batch Ingestion** — Drop an entire folder containing dozens of chat exports or multiple `.zip` archives at once. `wbv` automatically detects, parses, and arranges every individual and group conversation into a unified, searchable inbox with instant switching.
+- **100% Offline & Private** — Zero server uploads. Runs entirely in your browser as a static web app. No backend, no API, no analytics. Your messages, photos, and voice notes never leave your computer or phone (you can even disconnect your Wi-Fi).
+- **Magic-Byte File Sniffing** — Deeply inspects binary headers (`PK\x03\x04`, JPEG, PNG, Opus/Ogg, PDF, UTF-8 transcripts) to identify archives, chats, and media even if file extensions were lost or stripped during transfer.
+- **Smart Self-Identity Detection** — Automatically determines who you are in group chats via 1-on-1 consensus voting and deletion fingerprint tracking (`"You deleted this message"`), displaying your bubbles in green on the right and others on the left.
+- **Authentic WhatsApp Interface & Markdown** — Includes curved SVG speech bubble tails, inline floating timestamps, sticky date chips, audio waveforms with 1.5x/2x playback, edited message badges (`Edited`), full WhatsApp markdown formatting (`*bold*`, `_italics_`, `~strike~`, `` `code` ``, `> quotes`), and clickable links.
+- **Lazy Video Playback & Performance** — Video messages render with lightweight thumbnail posters, frosted-glass play buttons (`▶`), and duration badges, preventing hardware decoder exhaustion while scrolling.
+- **Zero-Lag Search Highlighting** — Real-time search across conversations and message transcripts with instant yellow match highlighting.
+- **Mobile-Optimized & Native Back Navigation** — Full hardware Back button and gesture support on Android and iOS (pressing back closes the chat or photo lightbox without accidentally exiting the website).
+- **Engineered for Huge Archives (5GB+)** — Media is indexed lazily and decoded only when scrolled into view. An automatic LRU cache evicts older media from memory, keeping RAM usage ultra-lean (~60MB) even with thousands of photos.
+- **Hardware-Accelerated 120Hz+ Scrolling** — Adapts directly to your display's refresh rate (90Hz, 120Hz, 144Hz+) using `@tanstack/react-virtual` across 100,000+ messages (rendering only ~20 DOM nodes at a time).
+- **Universal Android & iOS Parsing** — Seamlessly parses both Android (`\u202f` narrow spaces) and iOS bracketed exports, with one-click side swapping and manual perspective switching.
 
 ---
 
