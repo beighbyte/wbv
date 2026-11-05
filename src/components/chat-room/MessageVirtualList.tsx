@@ -16,7 +16,7 @@ interface MessageVirtualListProps {
 
 type VirtualItem =
   | { type: "date"; date: string; timestamp?: number; key: string }
-  | { type: "message"; message: ChatMessage; key: string };
+  | { type: "message"; message: ChatMessage; isFirstInStreak: boolean; key: string };
 
 export const MessageVirtualList: React.FC<MessageVirtualListProps> = ({
   conversation,
@@ -42,7 +42,10 @@ export const MessageVirtualList: React.FC<MessageVirtualListProps> = ({
 
     for (let i = 0; i < filtered.length; i++) {
       const msg = filtered[i];
-      if (msg.date && msg.date !== lastDate) {
+      const prevMsg = i > 0 ? filtered[i - 1] : null;
+
+      const isDateChange = Boolean(msg.date && msg.date !== lastDate);
+      if (isDateChange) {
         lastDate = msg.date;
         list.push({
           type: "date",
@@ -51,9 +54,20 @@ export const MessageVirtualList: React.FC<MessageVirtualListProps> = ({
           key: `date_${msg.date}_${i}`,
         });
       }
+
+      const isDiffSender = !prevMsg || prevMsg.sender !== msg.sender || prevMsg.direction !== msg.direction;
+      const isTimeGap = Boolean(
+        prevMsg &&
+        msg.timestamp &&
+        prevMsg.timestamp &&
+        Math.abs(msg.timestamp - prevMsg.timestamp) > 5 * 60 * 1000
+      );
+      const isFirstInStreak = isDateChange || isDiffSender || isTimeGap;
+
       list.push({
         type: "message",
         message: msg,
+        isFirstInStreak,
         key: msg.id,
       });
     }
@@ -182,6 +196,7 @@ export const MessageVirtualList: React.FC<MessageVirtualListProps> = ({
                   <MessageBubble
                     message={item.message}
                     isGroup={conversation.isGroup}
+                    isFirstInStreak={item.isFirstInStreak}
                     searchQuery={searchFilter}
                     onPreviewImage={onPreviewImage}
                   />

@@ -21,6 +21,7 @@ export interface ChatMessage {
   mediaType?: MediaType;
   omitted: boolean;
   deleted: boolean;
+  edited?: boolean;
   system: boolean;
 }
 

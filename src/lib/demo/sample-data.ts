@@ -61,6 +61,7 @@ export function createDemoConversations(): Conversation[] {
       media: null,
       omitted: false,
       deleted: false,
+      edited: true,
       system: false,
     },
     {

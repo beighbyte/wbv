@@ -4,6 +4,7 @@ import {
   IOS_LINE_RE,
   MEDIA_ATTACHED_PATTERNS,
   MEDIA_OMITTED_RE,
+  stripEditedMarker,
   isSystemMessage,
   cleanSenderName,
   parseDateTimestamp,
@@ -106,6 +107,9 @@ export function parseChatTranscript(
     const matched = matchLine(raw);
     if (matched) {
       if (currentMsg) {
+        const { cleanBody, isEdited } = stripEditedMarker(currentMsg.body);
+        currentMsg.body = cleanBody;
+        if (isEdited) currentMsg.edited = true;
         messages.push(currentMsg);
       }
 
@@ -153,6 +157,9 @@ export function parseChatTranscript(
   }
 
   if (currentMsg) {
+    const { cleanBody, isEdited } = stripEditedMarker(currentMsg.body);
+    currentMsg.body = cleanBody;
+    if (isEdited) currentMsg.edited = true;
     messages.push(currentMsg);
   }
 

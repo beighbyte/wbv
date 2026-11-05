@@ -16,6 +16,31 @@ export const MEDIA_ATTACHED_PATTERNS = [
   /^‎?<attached:\s*([^>]+)>$/i,
 ];
 
+// Edited message markers appended by WhatsApp exports
+export const EDITED_MESSAGE_RE =
+  /[\s\u200e\u200f]*<(?:This message was edited|Ce message a été modifié|Questo messaggio è stato modificato|Este mensaje fue editado|Diese Nachricht wurde bearbeitet)>[\s\u200e\u200f]*$/i;
+
+export function stripEditedMarker(body: string): { cleanBody: string; isEdited: boolean } {
+  if (EDITED_MESSAGE_RE.test(body)) {
+    return {
+      cleanBody: body.replace(EDITED_MESSAGE_RE, "").trimEnd(),
+      isEdited: true,
+    };
+  }
+
+  // Fallback for cases with trailing newline
+  const fallback =
+    /<(?:This message was edited|Ce message a été modifié|Questo messaggio è stato modificato|Este mensaje fue editado|Diese Nachricht wurde bearbeitet)>/i;
+  if (fallback.test(body)) {
+    return {
+      cleanBody: body.replace(fallback, "").trimEnd(),
+      isEdited: true,
+    };
+  }
+
+  return { cleanBody: body, isEdited: false };
+}
+
 // Omitted media markers
 export const MEDIA_OMITTED_RE =
   /^(?:<Media omitted>|<Fichier omis>|<Audio omesso>|Media omitted|‎image omitted|‎video omitted|‎audio omitted|‎sticker omitted|‎document omitted|‎Contact card omitted|‎GIF omitted)/i;
