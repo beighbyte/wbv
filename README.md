@@ -10,7 +10,10 @@
 
   <p>Zero server uploads • Multi-chat folder support • Hardware-accelerated 120Hz+ • 100% Client-side</p>
 
+ 
+
   <p>
+    <a href="https://free-whatsapp-backup-viewer.vercel.app/"><img src="https://img.shields.io/badge/Demo-Live%20App-008069?style=flat-square&logo=vercel" alt="Live Demo" /></a>
     <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js" alt="Next.js 15" /></a>
     <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19-blue?style=flat-square&logo=react" alt="React 19" /></a>
     <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript" alt="TypeScript 5" /></a>
@@ -28,6 +31,12 @@
 | <img src="screenshots/landing.png" alt="wbv Drop Zone" width="260" /> | <img src="screenshots/chat-list.png" alt="wbv Chat Inbox" width="260" /> | <img src="screenshots/chat-view.png" alt="wbv Chat View" width="260" /> |
 
 </div>
+
+<p align="center">
+    <a href="https://free-whatsapp-backup-viewer.vercel.app/">
+      <img src="https://img.shields.io/badge/▶%20Live%20Demo-Try%20wbv%20Now-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="Try wbv Live Demo" />
+    </a>
+  </p>
 
 ---
 
@@ -51,7 +60,15 @@ Most existing WhatsApp backup viewers either upload your sensitive personal chat
 
 ---
 
-## Quick Start
+## Try It Online
+
+You can use the viewer instantly without installing anything:
+
+👉 **[Launch Live App — free-whatsapp-backup-viewer.vercel.app](https://free-whatsapp-backup-viewer.vercel.app/)**
+
+---
+
+## Local Development
 
 ```bash
 # 1. Clone the repository
