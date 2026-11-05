@@ -1,5 +1,6 @@
-import React from "react";
-import { Search, FolderSync, MessageSquare, Heart } from "lucide-react";
+import React, { useState } from "react";
+import { Search, FolderSync, MessageSquare, HeartHandshake } from "lucide-react";
+import { DonateModal } from "../common/DonateModal";
 
 interface ChatListHeaderProps {
   searchQuery: string;
@@ -14,6 +15,8 @@ export const ChatListHeader: React.FC<ChatListHeaderProps> = ({
   onReset,
   chatCount,
 }) => {
+  const [showDonateModal, setShowDonateModal] = useState(false);
+
   return (
     <div className="shrink-0 bg-white dark:bg-wa-dark-panel border-b border-gray-200 dark:border-gray-800">
       {/* Top Green WhatsApp Bar */}
@@ -25,16 +28,14 @@ export const ChatListHeader: React.FC<ChatListHeaderProps> = ({
           </h2>
         </div>
         <div className="flex items-center gap-1.5">
-          <a
-            href="https://razorpay.me/@beighbyte"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs text-white/90 hover:text-white bg-white/10 hover:bg-white/20 py-1.5 px-2 rounded-lg transition"
-            title="Support this project"
+          <button
+            onClick={() => setShowDonateModal(true)}
+            className="flex items-center gap-1.5 text-xs text-white/95 hover:text-white bg-white/15 hover:bg-white/25 py-1.5 px-2.5 rounded-lg transition font-medium active:scale-95 shadow-xs"
+            title="Donate & support this project"
           >
-            <Heart className="w-3.5 h-3.5 text-pink-300 fill-pink-300" />
-            <span className="hidden sm:inline">Tip</span>
-          </a>
+            <HeartHandshake className="w-4 h-4 text-emerald-200" />
+            <span>Donate</span>
+          </button>
           <button
             onClick={onReset}
             className="flex items-center gap-1.5 text-xs text-white/90 hover:text-white bg-white/10 hover:bg-white/20 py-1.5 px-2.5 rounded-lg transition"
@@ -45,6 +46,11 @@ export const ChatListHeader: React.FC<ChatListHeaderProps> = ({
           </button>
         </div>
       </div>
+
+      <DonateModal
+        isOpen={showDonateModal}
+        onClose={() => setShowDonateModal(false)}
+      />
 
       {/* WhatsApp Search Bar */}
       <div className="px-3 py-2 bg-gray-50/80 dark:bg-wa-dark-panel">

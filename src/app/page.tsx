@@ -7,7 +7,7 @@ import { blobManager } from "@/lib/storage/blob-manager";
 import { mediaRegistry } from "@/lib/storage/media-registry";
 import { chatCache } from "@/lib/storage/chat-cache";
 import { parseChatTranscript } from "@/lib/parser/parse-chat";
-import { createDemoConversation } from "@/lib/demo/sample-data";
+import { createDemoConversations } from "@/lib/demo/sample-data";
 
 import { DropZone } from "@/components/landing/DropZone";
 import { ChatListHeader } from "@/components/chat-list/ChatListHeader";
@@ -59,10 +59,15 @@ export default function Home() {
   };
 
   const handleLoadDemo = () => {
-    const demo = createDemoConversation();
-    setConversations([demo]);
+    const demos = createDemoConversations();
+    demos.forEach((d) => {
+      if (d.messages && d.messages.length > 0) {
+        chatCache.set(d.id, d.messages);
+      }
+    });
+    setConversations(demos);
     const isDesktop = typeof window !== "undefined" && window.innerWidth >= 768;
-    setActiveChatId(isDesktop ? demo.id : null);
+    setActiveChatId(isDesktop ? demos[0].id : null);
   };
 
   const handleReset = () => {

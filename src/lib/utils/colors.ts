@@ -1,20 +1,18 @@
+// High-contrast, clean modern palette designed to never blend with the WhatsApp #008069 header
 const PARTICIPANT_PALETTE = [
-  "#1f7a8c",
-  "#e07a5f",
-  "#3d5a80",
-  "#ee6c4d",
-  "#2a9d8f",
-  "#e76f51",
-  "#023e8a",
-  "#7209b7",
-  "#0077b6",
-  "#457b9d",
-  "#9b5de5",
-  "#f15bb5",
-  "#00bbf9",
-  "#00f5d4",
-  "#d62828",
-  "#f77f00",
+  "#2563eb", // Royal Blue
+  "#7c3aed", // Violet
+  "#db2777", // Rose / Pink
+  "#ea580c", // Coral Orange
+  "#0284c7", // Sky Blue
+  "#9333ea", // Purple
+  "#d97706", // Amber
+  "#0891b2", // Cyan
+  "#4f46e5", // Indigo
+  "#e11d48", // Crimson Red
+  "#0d9488", // Deep Teal (distinct from wa-primary)
+  "#c026d3", // Fuchsia
+  "#475569", // Slate
 ];
 
 export function getParticipantColor(name: string): string {

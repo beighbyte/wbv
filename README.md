@@ -15,6 +15,12 @@ Zero server uploads • Multi-chat folder support • Hardware-accelerated 120Hz
 [![Zero Server Uploads](https://img.shields.io/badge/Privacy-100%25%20Offline-25D366?style=flat-square&logo=whatsapp)](https://github.com/beighbyte/wbv)
 [![Sponsor](https://img.shields.io/badge/Sponsor-Razorpay-02042B?style=flat-square&logo=razorpay)](https://razorpay.me/@beighbyte)
 
+<br /><br />
+
+| 1. Landing & Drag-and-Drop | 2. Multi-Chat Inbox | 3. Authentic Chat View |
+| :---: | :---: | :---: |
+| <img src="screenshots/landing.png" alt="wbv Drop Zone" width="260" /> | <img src="screenshots/chat-list.png" alt="wbv Chat Inbox" width="260" /> | <img src="screenshots/chat-view.png" alt="wbv Chat View" width="260" /> |
+
 </div>
 
 ---
