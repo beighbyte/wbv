@@ -128,6 +128,12 @@ export default function Home() {
   };
 
   const handleSelectParticipantPerspective = (chatId: string, senderName: string) => {
+    if (senderName && typeof window !== "undefined") {
+      try {
+        localStorage.setItem("wbv_user_identity", senderName);
+      } catch {}
+    }
+
     setConversations((prev) =>
       prev.map((c) => {
         if (c.id !== chatId) return c;

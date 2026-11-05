@@ -231,14 +231,40 @@ export async function extractAndProcessFiles(
     return [];
   }
 
-  // First pass: discover user's identity from 1-on-1 chats
-  let discoveredUserName: string | null = null;
+  // First pass: discover user's identity via consensus across all chats & deletion fingerprints
+  const identityVotes: Record<string, number> = {};
+
   for (const item of parsedRaw) {
     const chat = parseChatTranscript(item.text, item.name, {});
-    if (chat && !chat.isGroup && chat.myName) {
-      discoveredUserName = chat.myName;
-      break;
+    if (chat && chat.myName) {
+      // 1-on-1 chats and deletion fingerprints yield myName
+      // Give group deletion fingerprints strong weight (5), 1-on-1 chats (2)
+      const weight = chat.isGroup ? 5 : 2;
+      identityVotes[chat.myName] = (identityVotes[chat.myName] || 0) + weight;
     }
+  }
+
+  let discoveredUserName: string | null = null;
+  let maxVotes = 0;
+  for (const [name, votes] of Object.entries(identityVotes)) {
+    if (votes > maxVotes) {
+      maxVotes = votes;
+      discoveredUserName = name;
+    }
+  }
+
+  // Fallback to localStorage if this upload didn't contain sufficient clues
+  if (!discoveredUserName && typeof window !== "undefined") {
+    try {
+      discoveredUserName = localStorage.getItem("wbv_user_identity");
+    } catch {}
+  }
+
+  // Persist winning identity for future uploads
+  if (discoveredUserName && typeof window !== "undefined") {
+    try {
+      localStorage.setItem("wbv_user_identity", discoveredUserName);
+    } catch {}
   }
 
   // Second pass: parse all chats with discovered user identity

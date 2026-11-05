@@ -48,6 +48,43 @@ function extractMediaFilename(body: string): string | null {
   return null;
 }
 
+/**
+ * Checks if a sender name matches the contact name extracted from the filename,
+ * accounting for partial names, saved contact vs WhatsApp profile name, and prefixes/suffixes.
+ * Examples:
+ * - "Sarah Jenkins" and "Sarah" -> true
+ * - "Sarah" and "Sarah Jenkins" -> true
+ * - "+1 (555) 234-5678" and "+15552345678" -> true
+ * - "Alex Office" and "Alex" -> true
+ * - "John Doe" and "Abrar" -> false
+ */
+export function isSameContactOrToken(targetContact: string, sender: string): boolean {
+  if (!targetContact || !sender) return false;
+  const a = targetContact.toLowerCase().trim();
+  const b = sender.toLowerCase().trim();
+  if (a === b) return true;
+
+  // Normalize phone numbers / digits
+  const digitsA = a.replace(/\D/g, "");
+  const digitsB = b.replace(/\D/g, "");
+  if (digitsA.length >= 7 && digitsB.length >= 7 && (digitsA.endsWith(digitsB) || digitsB.endsWith(digitsA))) {
+    return true;
+  }
+
+  // Tokenize words
+  const tokensA = a.split(/[\s,._\-()]+/).filter((t) => t.length >= 2);
+  const tokensB = b.split(/[\s,._\-()]+/).filter((t) => t.length >= 2);
+
+  // If ANY meaningful word token (length >= 3) matches exactly
+  for (const ta of tokensA) {
+    if (ta.length >= 3 && tokensB.includes(ta)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export function parseChatTranscript(
   text: string,
   fileName: string,
@@ -61,6 +98,7 @@ export function parseChatTranscript(
   let currentMsg: ChatMessage | null = null;
   let counter = 0;
   let hasGroupSystemEvent = false;
+  let deletionFingerprintSender: string | null = null;
 
   for (const raw of lines) {
     if (!raw && !currentMsg) continue;
@@ -75,6 +113,9 @@ export function parseChatTranscript(
 
       if (sender) {
         senderCounts[sender] = (senderCounts[sender] || 0) + 1;
+        if (/you deleted this message/i.test(body) || sender.toLowerCase() === "you") {
+          deletionFingerprintSender = sender;
+        }
       }
 
       if (/created group|added you|joined using this group's invite/i.test(body)) {
@@ -141,39 +182,69 @@ export function parseChatTranscript(
   }
 
   let resolvedMyName = knownMyName;
+
+  // 1. Highest priority self-identity: deletion fingerprint from this chat
+  if (!resolvedMyName && deletionFingerprintSender) {
+    resolvedMyName = deletionFingerprintSender;
+  }
+
+  // 2. Fallback: check remembered identity from localStorage
+  if (!resolvedMyName && typeof window !== "undefined") {
+    try {
+      const saved = localStorage.getItem("wbv_user_identity");
+      if (saved && distinctSenders.some((s) => s.toLowerCase() === saved.toLowerCase())) {
+        resolvedMyName = saved;
+      }
+    } catch {}
+  }
+
   let contactName = targetName;
 
   if (!isGroup) {
     // 1-ON-1 CHAT:
-    // Exactly two participants: the Contact (targetName) and Me
-    if (!targetName && distinctSenders.length > 0) {
-      if (resolvedMyName) {
-        const contact = distinctSenders.find((s) => s.toLowerCase() !== resolvedMyName!.toLowerCase());
-        contactName = contact || distinctSenders[0];
-      } else {
-        contactName = distinctSenders[0];
+    // Determine the Contact name vs My Name
+    const contactInSenders = distinctSenders.find((s) => isSameContactOrToken(targetName, s));
+
+    if (contactInSenders) {
+      contactName = contactInSenders;
+      if (!resolvedMyName) {
+        const otherSender = distinctSenders.find((s) => s !== contactInSenders);
+        if (otherSender) {
+          resolvedMyName = otherSender;
+        }
+      }
+    } else if (targetName) {
+      contactName = targetName;
+      if (!resolvedMyName) {
+        const otherSender = distinctSenders.find((s) => !isSameContactOrToken(targetName, s));
+        if (otherSender) {
+          resolvedMyName = otherSender;
+        }
       }
     } else {
-      contactName = targetName || (distinctSenders.length > 0 ? distinctSenders[0] : "Chat");
-    }
-
-    // The other sender must be "Me"
-    if (!resolvedMyName) {
-      const otherSender = distinctSenders.find((s) => s.toLowerCase() !== contactName.toLowerCase());
-      if (otherSender) {
-        resolvedMyName = otherSender;
+      // No filename hint: if resolvedMyName is known, the other sender is contactName
+      if (resolvedMyName) {
+        const other = distinctSenders.find((s) => s.toLowerCase() !== resolvedMyName!.toLowerCase());
+        contactName = other || distinctSenders[0] || "Chat";
+      } else {
+        contactName = distinctSenders[0] || "Chat";
+        if (distinctSenders.length > 1) {
+          resolvedMyName = distinctSenders[1];
+        }
       }
     }
 
-    // Now set directions with 100% accuracy:
-    // If the sender is the contact -> incoming ('in')
-    // If the sender is NOT the contact -> outgoing ('out')
+    // Set directions for 1-on-1:
     for (const msg of messages) {
       if (msg.sender) {
-        if (msg.sender.toLowerCase() === contactName.toLowerCase()) {
+        if (msg.sender.toLowerCase() === "you") {
+          msg.direction = "out";
+        } else if (resolvedMyName && msg.sender.toLowerCase() === resolvedMyName.toLowerCase()) {
+          msg.direction = "out";
+        } else if (isSameContactOrToken(contactName, msg.sender)) {
           msg.direction = "in";
         } else {
-          msg.direction = "out";
+          msg.direction = resolvedMyName ? "in" : "out";
         }
       }
     }
@@ -181,14 +252,25 @@ export function parseChatTranscript(
     // GROUP CHAT:
     contactName = targetName || "Group Chat";
 
-    // Set directions:
+    // Set directions for Group:
     for (const msg of messages) {
-      if (msg.sender && resolvedMyName && msg.sender.toLowerCase() === resolvedMyName.toLowerCase()) {
-        msg.direction = "out";
-      } else {
-        msg.direction = "in";
+      if (msg.sender) {
+        if (msg.sender.toLowerCase() === "you") {
+          msg.direction = "out";
+        } else if (resolvedMyName && msg.sender.toLowerCase() === resolvedMyName.toLowerCase()) {
+          msg.direction = "out";
+        } else {
+          msg.direction = "in";
+        }
       }
     }
+  }
+
+  // Persist discovered identity for subsequent uploads & reloads
+  if (resolvedMyName && typeof window !== "undefined") {
+    try {
+      localStorage.setItem("wbv_user_identity", resolvedMyName);
+    } catch {}
   }
 
   const lastMsg = [...messages].reverse().find((m) => !m.system) || messages[messages.length - 1];
