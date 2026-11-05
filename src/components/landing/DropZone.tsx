@@ -3,6 +3,7 @@
 import React, { useRef, useState } from "react";
 import { FolderUp, FileArchive, UploadCloud, HelpCircle, Sparkles, Loader2, ShieldCheck, AlertCircle } from "lucide-react";
 import { ExportGuideModal } from "./ExportGuideModal";
+import { FolderUploadNoticeModal } from "./FolderUploadNoticeModal";
 import { RazorpayButton } from "../common/RazorpayButton";
 import { ProcessingState } from "@/types/chat";
 
@@ -19,8 +20,21 @@ export const DropZone: React.FC<DropZoneProps> = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [showFolderNotice, setShowFolderNotice] = useState(false);
   const folderInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFolderButtonClick = () => {
+    const skip =
+      typeof window !== "undefined" &&
+      localStorage.getItem("wbv_skip_folder_notice") === "true";
+
+    if (skip) {
+      folderInputRef.current?.click();
+    } else {
+      setShowFolderNotice(true);
+    }
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -157,7 +171,7 @@ export const DropZone: React.FC<DropZoneProps> = ({
 
             {/* Secondary Action Button */}
             <button
-              onClick={() => folderInputRef.current?.click()}
+              onClick={handleFolderButtonClick}
               className="w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium py-2.5 px-4 rounded-xl transition"
             >
               <FolderUp className="w-4 h-4" />
@@ -209,6 +223,11 @@ export const DropZone: React.FC<DropZoneProps> = ({
       </div>
 
       <ExportGuideModal isOpen={showGuide} onClose={() => setShowGuide(false)} />
+      <FolderUploadNoticeModal
+        isOpen={showFolderNotice}
+        onClose={() => setShowFolderNotice(false)}
+        onProceed={() => folderInputRef.current?.click()}
+      />
     </div>
   );
 };
