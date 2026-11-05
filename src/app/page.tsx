@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { Conversation, ProcessingState } from "@/types/chat";
 import { extractAndProcessFiles } from "@/lib/zip/extract";
 import { blobManager } from "@/lib/storage/blob-manager";
@@ -26,6 +26,97 @@ export default function Home() {
 
   const [previewImage, setPreviewImage] = useState<{ url: string; filename: string } | null>(null);
   const [chatVersion, setChatVersion] = useState(0);
+  const [showExitToast, setShowExitToast] = useState(false);
+  const lastBackPressRef = useRef<number>(0);
+
+  // Open Chat with history push on mobile (< 768px)
+  const handleOpenChat = (id: string) => {
+    setActiveChatId(id);
+    setInChatSearch("");
+    setInChatSearchOpen(false);
+
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      window.history.pushState({ view: "chat", chatId: id }, "");
+    }
+  };
+
+  // Close Chat (sync with browser history stack)
+  const handleCloseChat = () => {
+    if (typeof window !== "undefined" && window.history.state?.view === "chat") {
+      window.history.back();
+    } else {
+      setActiveChatId(null);
+    }
+  };
+
+  // Open preview image with history push
+  const handleOpenPreviewImage = (url: string, filename: string) => {
+    setPreviewImage({ url, filename });
+    if (typeof window !== "undefined") {
+      window.history.pushState({ view: "preview" }, "");
+    }
+  };
+
+  // Close preview image
+  const handleClosePreviewImage = () => {
+    if (typeof window !== "undefined" && window.history.state?.view === "preview") {
+      window.history.back();
+    } else {
+      setPreviewImage(null);
+    }
+  };
+
+  // Handle hardware / gesture back button navigation
+  useEffect(() => {
+    if (conversations.length === 0) return;
+
+    // Ensure baseline history state for the chat list
+    if (typeof window !== "undefined" && !window.history.state?.view) {
+      window.history.replaceState({ view: "chatlist" }, "");
+    }
+
+    const handlePopState = () => {
+      // 1. If photo preview is open, close preview first
+      if (previewImage) {
+        setPreviewImage(null);
+        return;
+      }
+
+      // 2. If chat is open on mobile, return to chat list
+      if (activeChatId) {
+        setActiveChatId(null);
+        return;
+      }
+
+      // 3. If already on the chat list, prevent accidental website exit
+      const now = Date.now();
+      if (now - lastBackPressRef.current < 2500) {
+        // Second press within 2.5s -> allow native exit
+        window.history.back();
+      } else {
+        // First press -> keep user on chat list, show reminder toast
+        lastBackPressRef.current = now;
+        window.history.pushState({ view: "chatlist" }, "");
+        setShowExitToast(true);
+        setTimeout(() => setShowExitToast(false), 2500);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [conversations.length, activeChatId, previewImage]);
+
+  // Prevent accidental tab closure / refresh when session is active
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (conversations.length > 0) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [conversations.length]);
 
   const [processingState, setProcessingState] = useState<ProcessingState>({
     stage: "idle",
@@ -242,11 +333,7 @@ export default function Home() {
                   conversation={chat}
                   isSelected={chat.id === activeChatId}
                   searchQuery={chatListSearch}
-                  onClick={() => {
-                    setActiveChatId(chat.id);
-                    setInChatSearch("");
-                    setInChatSearchOpen(false);
-                  }}
+                  onClick={() => handleOpenChat(chat.id)}
                 />
               ))
             ) : (
@@ -267,7 +354,7 @@ export default function Home() {
             <>
               <ChatHeader
                 conversation={activeConversation}
-                onBack={() => setActiveChatId(null)}
+                onBack={handleCloseChat}
                 searchOpen={inChatSearchOpen}
                 searchQuery={inChatSearch}
                 onToggleSearch={() => setInChatSearchOpen((prev) => !prev)}
@@ -282,7 +369,7 @@ export default function Home() {
                 key={activeConversation.id}
                 conversation={activeConversation}
                 searchFilter={inChatSearch}
-                onPreviewImage={(url, filename) => setPreviewImage({ url, filename })}
+                onPreviewImage={handleOpenPreviewImage}
               />
 
               {/* Read-only WhatsApp message input banner */}
@@ -319,8 +406,15 @@ export default function Home() {
           isOpen={true}
           url={previewImage.url}
           filename={previewImage.filename}
-          onClose={() => setPreviewImage(null)}
+          onClose={handleClosePreviewImage}
         />
+      )}
+
+      {/* Toast: Press back again to exit viewer */}
+      {showExitToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900/95 dark:bg-gray-800/95 text-white text-xs px-4 py-2.5 rounded-full shadow-2xl backdrop-blur-md border border-white/10 animate-in fade-in slide-in-from-bottom-2 duration-150 flex items-center gap-2 select-none pointer-events-none">
+          <span>Press back again to exit</span>
+        </div>
       )}
     </main>
   );
