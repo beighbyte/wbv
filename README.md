@@ -16,7 +16,6 @@
     <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript" alt="TypeScript 5" /></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="License: MIT" /></a>
     <a href="https://github.com/beighbyte/wbv"><img src="https://img.shields.io/badge/Privacy-100%25%20Offline-25D366?style=flat-square&logo=whatsapp" alt="Zero Server Uploads" /></a>
-    <a href="https://razorpay.me/@beighbyte"><img src="https://img.shields.io/badge/Sponsor-Razorpay-02042B?style=flat-square&logo=razorpay" alt="Sponsor" /></a>
   </p>
 </div>
 
@@ -80,7 +79,7 @@ The compiled static files are generated into the `out/` folder. Serve them with 
 
 ---
 
-## Support & Sponsor
+## Support
 
 If this tool helped you recover, archive, or browse your chat memories, consider supporting the project:
 
