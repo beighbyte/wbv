@@ -99,6 +99,12 @@ npm run build
 
 The compiled static files are generated into the `out/` folder. Serve them with Nginx, Caddy, Apache, Docker, or any static file server.
 
+### Install and use offline
+
+The production build includes a web app manifest, install icons, and a service worker that precaches the exported app. Serve the site over HTTPS (or localhost), open it once while online, and install it from your browser's install or add-to-home-screen option. The app shell then remains available offline.
+
+WhatsApp backups are not stored by the service worker: select or drop your backup again after launching the app offline.
+
 ---
 
 ## Support

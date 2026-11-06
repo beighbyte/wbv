@@ -1,10 +1,17 @@
 import type { Metadata, Viewport } from "next";
+import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "WhatsApp Backup Viewer - 100% Client-Side & Private",
   description:
     "View your exported WhatsApp chats (.zip or folder) smoothly with full WhatsApp design, voice notes, stickers, and images. All processing stays local on your device.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "wbv",
+  },
   keywords: [
     "WhatsApp Backup Viewer",
     "WhatsApp Export Reader",
@@ -35,9 +42,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className="h-full select-none antialiased bg-gray-100 dark:bg-wa-dark-bg text-gray-900 dark:text-gray-100">
+        <ServiceWorkerRegistration />
         {children}
       </body>
     </html>
   );
 }
-
