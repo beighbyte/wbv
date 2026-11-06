@@ -16,7 +16,14 @@ async function getFiles(directory) {
 }
 
 const files = (await getFiles(outputDirectory))
-  .filter((file) => path.relative(outputDirectory, file) !== "sw.js")
+  .filter((file) => {
+    const relativePath = path.relative(outputDirectory, file);
+    return (
+      relativePath !== "sw.js" &&
+      relativePath !== "404.html" &&
+      relativePath !== "index.html"
+    );
+  })
   .sort();
 if (files.length === 0) {
   throw new Error(`No files found in static export directory: ${outputDirectory}`);
